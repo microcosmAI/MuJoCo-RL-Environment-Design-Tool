@@ -26,6 +26,7 @@ So far you can basically only create a bunch of floating blocks and planes to de
 
 ## 💻 Usage
 Just clone the repository and open it in Unity. Long term I plan on providing installers, so that other team members (and anyone else who is interested) are able to use this little piece of software.
+<p align="center"><img src="Images/ScreenshotTool.png" alt="drawing" width="70%" /> </p>
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## 💾 Structure
