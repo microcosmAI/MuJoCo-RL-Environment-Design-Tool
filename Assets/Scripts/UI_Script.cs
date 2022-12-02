@@ -52,6 +52,7 @@ public class UI_Script : MonoBehaviour
         if (Physics.Raycast(ray, out hit)){
             if (hit.transform != null){
                 this.selected = (GameObject) Instantiate(Resources.Load("Cube"), hit.point, Quaternion.identity);
+                this.selected = this.selected.transform.GetChild(0).transform.gameObject;
             }
         }
     }
@@ -63,6 +64,7 @@ public class UI_Script : MonoBehaviour
         if (Physics.Raycast(ray, out hit)){
             if (hit.transform != null){
                 this.selected = (GameObject) Instantiate(Resources.Load("Sphere"), hit.point, Quaternion.identity);
+                this.selected = this.selected.transform.GetChild(0).transform.gameObject;
             }
         }
     }
@@ -74,6 +76,7 @@ public class UI_Script : MonoBehaviour
         if (Physics.Raycast(ray, out hit)){
             if (hit.transform != null){
                 this.selected = (GameObject) Instantiate(Resources.Load("Plane"), hit.point, Quaternion.identity);
+                this.selected = this.selected.transform.GetChild(0).transform.gameObject;
             }
         }
     }
@@ -119,13 +122,13 @@ public class UI_Script : MonoBehaviour
         ser.Serialize(writer, model);
         writer.Close();
 
-        string[] arrLine = File.ReadAllLines("Assets/Models/Model.xml");
+        string[] arrLine = File.ReadAllLines("Model.xml");
         arrLine[1] = "<mujoco>";
         string[] newText = new string[arrLine.Length - 1];
         for(int i = 1; i < arrLine.Length; i++){
             newText[i-1] = arrLine[i];
         }
-        File.WriteAllLines("Assets/Models/Model.xml", newText);
+        File.WriteAllLines("Model.xml", newText);
     }
 
     // Update is called once per frame
@@ -133,6 +136,7 @@ public class UI_Script : MonoBehaviour
     {
         this.OnLeftClick();
         this.MoveObject();
+        this.OnBackspace();
     }
 
     private void OnLeftClick()
@@ -236,6 +240,15 @@ public class UI_Script : MonoBehaviour
             }
         } else {
             this.lastPosition = Vector3.zero;
+        }
+    }
+
+    private void OnBackspace(){
+        if(Input.GetKeyDown(KeyCode.Backspace)){
+            Destroy(this.selected.transform.parent.gameObject);
+            Destroy(this.yArrow);
+            Destroy(this.zArrow);
+            Destroy(this.xArrow);
         }
     }
 
