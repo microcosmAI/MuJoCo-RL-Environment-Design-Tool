@@ -18,6 +18,10 @@ public class UI_Script : MonoBehaviour
 
     GameObject yArrow, xArrow, zArrow;
 
+    TextField xRotation, zRotation, yRotation;
+
+    TextField nameInput;
+
     public Material green, red, blue;
 
     private Vector3 lastPosition;
@@ -36,11 +40,19 @@ public class UI_Script : MonoBehaviour
         this.xInput = rootElement.Q<TextField>("XInput");
         this.zInput = rootElement.Q<TextField>("ZInput");
 
+        this.xRotation = rootElement.Q<TextField>("XRotation");
+        this.yRotation = rootElement.Q<TextField>("YRotation");
+        this.zRotation = rootElement.Q<TextField>("ZRotation");
+
+        this.nameInput = rootElement.Q<TextField>("NameInput");
+        var nameButton = rootElement.Q<Button>("ApplyName");
+
         cubeButton.clickable.clicked += onCubeButtonPressed;
         sphereButton.clickable.clicked += onSphereButtonPressed;
         planeButton.clickable.clicked += onPlaneButtonPressed;
         exportButton.clickable.clicked += onExportButtonPressed;
         scaleButton.clickable.clicked += onApplyScalePressed;
+        nameButton.clickable.clicked += OnApplyNamePressed;
 
         this.selected = null;
     }
@@ -87,6 +99,10 @@ public class UI_Script : MonoBehaviour
         GameObject[] spheres = GameObject.FindGameObjectsWithTag("Sphere");
         GameObject[] planes = GameObject.FindGameObjectsWithTag("Plane");
 
+        GameObject[] all = new GameObject[cubes.Length + spheres.Length];
+        cubes.CopyTo(all, 0);
+        spheres.CopyTo(all, cubes.Length);
+
         XmlSerializer ser = new XmlSerializer(typeof(mujoco));
         TextWriter writer = new StreamWriter("Model.xml");
         mujoco model = new mujoco();
@@ -107,17 +123,28 @@ public class UI_Script : MonoBehaviour
             model.worldbody.geom[i].size = size.x + " " + size.z + " " + size.y;
             model.worldbody.geom[i].rgba = ".9 0 0 1";
         }
-        for(int i = 0; i < cubes.Length; i++){
-            Vector3 size = cubes[i].transform.GetChild(0).transform.GetComponent<Renderer>().bounds.extents;
+        for(int i = 0; i < all.Length; i++){
+            Vector3 size = all[i].transform.GetChild(0).transform.GetComponent<Renderer>().bounds.extents;
             body body = new body();
-            body.pos = cubes[i].transform.position.x + " " + cubes[i].transform.position.z + " " + cubes[i].transform.position.y;
+            body.pos = all[i].transform.position.x + " " + all[i].transform.position.z + " " + all[i].transform.position.y;
+            
+            if(all[i].transform.GetComponent<Properties>().name != ""){
+                body.name = all[i].transform.GetComponent<Properties>().name;
+            }
 
             geom geom = new geom();
-            geom.type = "box";
+            if(i < cubes.Length){
+                geom.type = "box";
+            }
+            else{
+                geom.type = "sphere";
+            }
             geom.size = size.x + " " + size.z + " " + size.y;
+            geom.euler = all[i].transform.eulerAngles.x + " " + all[i].transform.eulerAngles.z + " " + all[i].transform.eulerAngles.y;
             geom.rgba = "0 .9 0 1";
             body.geom = geom;
             model.worldbody.body[i] = body;
+
         }
         ser.Serialize(writer, model);
         writer.Close();
@@ -154,10 +181,11 @@ public class UI_Script : MonoBehaviour
                         this.yInput.value = this.selected.transform.localScale.y.ToString();
                         this.zInput.value = this.selected.transform.localScale.z.ToString();
                         this.xInput.value = this.selected.transform.localScale.x.ToString();
-                    }
 
-                    Debug.Log(this.selected.transform.parent.transform.position);
-                    Debug.Log(this.selected.transform.GetComponent<Renderer>().bounds.center);
+                        this.xRotation.value = this.selected.transform.rotation.eulerAngles.x.ToString();
+                        this.yRotation.value = this.selected.transform.rotation.eulerAngles.y.ToString();
+                        this.zRotation.value = this.selected.transform.rotation.eulerAngles.z.ToString();
+                    }
                     Destroy(this.yArrow);
                     Destroy(this.zArrow);
                     Destroy(this.xArrow);
@@ -259,6 +287,19 @@ public class UI_Script : MonoBehaviour
         float zf = float.Parse(this.zInput.value);
         float xf = float.Parse(this.xInput.value);
         Vector3 scale = new Vector3(xf, yf, zf);
+
+        float xR = float.Parse(this.xRotation.value);
+        float yR = float.Parse(this.yRotation.value);
+        float zR = float.Parse(this.zRotation.value);
+        Vector3 rotation = new Vector3(xR, yR, zR);
+        Debug.Log(rotation);
+
+        this.selected.transform.parent.transform.eulerAngles = rotation;
         this.selected.transform.localScale = scale;
+    }
+
+
+    private void OnApplyNamePressed(){
+        this.selected.transform.parent.transform.GetComponent<Properties>().name = this.nameInput.value;
     }
 }

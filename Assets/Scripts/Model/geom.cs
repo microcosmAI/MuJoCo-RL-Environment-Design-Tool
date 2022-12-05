@@ -10,5 +10,7 @@ public class geom
     [XmlAttribute]
     public string size;
     [XmlAttribute]
+    public string euler;
+    [XmlAttribute]
     public string rgba;
 }

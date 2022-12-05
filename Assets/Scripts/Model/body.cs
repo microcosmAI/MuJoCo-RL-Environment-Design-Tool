@@ -7,6 +7,8 @@ public class body
 {
     [XmlAttribute]
     public string pos;
+    [XmlAttribute]
+    public string name;
     public joint joint;
     public geom geom;
 }
