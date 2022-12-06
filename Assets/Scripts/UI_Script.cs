@@ -17,10 +17,13 @@ public class UI_Script : MonoBehaviour
     TextField yInput, xInput, zInput;
 
     GameObject yArrow, xArrow, zArrow;
+    GameObject selectedArrow;
 
     TextField xRotation, zRotation, yRotation;
 
     TextField nameInput;
+
+    TextField rInput, gInput, bInput;
 
     public Material green, red, blue;
 
@@ -47,12 +50,18 @@ public class UI_Script : MonoBehaviour
         this.nameInput = rootElement.Q<TextField>("NameInput");
         var nameButton = rootElement.Q<Button>("ApplyName");
 
+        this.rInput = rootElement.Q<TextField>("RInput");
+        this.gInput = rootElement.Q<TextField>("GInput");
+        this.bInput = rootElement.Q<TextField>("BInput");
+        var colorButton = rootElement.Q<Button>("ApplyColor");
+
         cubeButton.clickable.clicked += onCubeButtonPressed;
         sphereButton.clickable.clicked += onSphereButtonPressed;
         planeButton.clickable.clicked += onPlaneButtonPressed;
         exportButton.clickable.clicked += onExportButtonPressed;
         scaleButton.clickable.clicked += onApplyScalePressed;
         nameButton.clickable.clicked += OnApplyNamePressed;
+        colorButton.clickable.clicked += OnApplyColorPressed;
 
         this.selected = null;
     }
@@ -141,7 +150,11 @@ public class UI_Script : MonoBehaviour
             }
             geom.size = size.x + " " + size.z + " " + size.y;
             geom.euler = all[i].transform.eulerAngles.x + " " + all[i].transform.eulerAngles.z + " " + all[i].transform.eulerAngles.y;
-            geom.rgba = "0 .9 0 1";
+            if(all[i].transform.GetComponent<Properties>().color != ""){
+                geom.rgba = all[i].transform.GetComponent<Properties>().color;
+            } else {
+                geom.rgba = "0 .9 0 1";
+            }
             body.geom = geom;
             model.worldbody.body[i] = body;
 
@@ -216,53 +229,62 @@ public class UI_Script : MonoBehaviour
         if(Input.GetMouseButton(0)){
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
-            int layerMask = LayerMask.GetMask("Arrow");
-            if(Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask)){
-                string tag = hit.collider.gameObject.transform.parent.transform.tag;
-                Transform obj = this.selected.transform.parent;
-                Debug.Log(tag);
-                if(tag == "BlueArrow"){
-                    if(lastPosition != Vector3.zero){
-                        Vector3 change = lastPosition - hit.point;
-                        change.y = 0;
-                        change.z = 0;
-                        this.lastPosition = hit.point;
-                        obj.transform.position -= change;
-                        this.yArrow.transform.position -= change;
-                        this.xArrow.transform.position -= change;
-                        this.zArrow.transform.position -= change;
-                    } else {
-                        this.lastPosition = hit.point;
+            if(lastPosition != Vector3.zero){
+                int layerMask = LayerMask.GetMask("ArrowHit");
+                RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, layerMask);
+                for(int i = 0; i < hits.Length; i++){
+                    hit = hits[i];
+                    if(hit.transform.parent.gameObject == this.selectedArrow){
+                        string tag = hit.collider.gameObject.transform.parent.transform.tag;
+                        Transform obj = this.selected.transform.parent;
+                        if(tag=="BlueArrow"){
+                            Vector3 change = lastPosition - hit.point;
+                            change.y = 0;
+                            change.z = 0;
+                            this.lastPosition = hit.point;
+                            obj.transform.position -= change;
+                            this.yArrow.transform.position -= change;
+                            this.xArrow.transform.position -= change;
+                            this.zArrow.transform.position -= change;
+                        }
+                        else if(tag=="GreenArrow"){
+                            Vector3 change = lastPosition - hit.point;
+                            change.x = 0;
+                            change.z = 0;
+                            this.lastPosition = hit.point;
+                            obj.transform.position -= change;
+                            this.yArrow.transform.position -= change;
+                            this.xArrow.transform.position -= change;
+                            this.zArrow.transform.position -= change;
+                        }
+                        else if(tag=="RedArrow"){
+                            Vector3 change = lastPosition - hit.point;
+                            change.x = 0;
+                            change.y = 0;
+                            this.lastPosition = hit.point;
+                            obj.transform.position -= change;
+                            this.yArrow.transform.position -= change;
+                            this.xArrow.transform.position -= change;
+                            this.zArrow.transform.position -= change;
+                        }
                     }
                 }
-                if(tag == "RedArrow"){
-                    if(lastPosition != Vector3.zero){
-                        Vector3 change = lastPosition - hit.point;
-                        change.y = 0;
-                        change.x = 0;
-                        this.lastPosition = hit.point;
-                        obj.transform.position -= change;
-                        this.yArrow.transform.position -= change;
-                        this.xArrow.transform.position -= change;
-                        this.zArrow.transform.position -= change;
-
-                    } else {
-                        this.lastPosition = hit.point;
-                    }
-                }
-                if(tag == "GreenArrow"){
-                    if(lastPosition != Vector3.zero){
-                        Vector3 change = lastPosition - hit.point;
-                        change.z = 0;
-                        change.x = 0;
-                        this.lastPosition = hit.point;
-                        obj.transform.position -= change;
-                        this.yArrow.transform.position -= change;
-                        this.xArrow.transform.position -= change;
-                        this.zArrow.transform.position -= change;
-
-                    } else {
-                        this.lastPosition = hit.point;
+            } else{
+                int layerMask2 = LayerMask.GetMask("Arrow");
+                if(Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask2)){
+                    string tag = hit.collider.gameObject.transform.parent.transform.tag;
+                    Transform obj = this.selected.transform.parent;
+                    Transform arrow = hit.collider.transform.parent;
+                    if(lastPosition == Vector3.zero){
+                        int hitMask = LayerMask.GetMask("ArrowHit");
+                        RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, hitMask);
+                        this.selectedArrow = arrow.gameObject;
+                        for(int i = 0; i < hits.Length; i++){
+                            if(hits[i].collider.gameObject.transform.parent.transform.tag == tag){
+                                this.lastPosition = hits[i].point;
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -301,5 +323,14 @@ public class UI_Script : MonoBehaviour
 
     private void OnApplyNamePressed(){
         this.selected.transform.parent.transform.GetComponent<Properties>().name = this.nameInput.value;
+    }
+
+    private void OnApplyColorPressed(){
+        float r = float.Parse(this.rInput.value);
+        float g = float.Parse(this.gInput.value);
+        float b = float.Parse(this.bInput.value);
+        Color color = new Color(r, g, b);
+        this.selected.transform.GetComponent<Renderer>().material.color = color;
+        this.selected.transform.parent.transform.GetComponent<Properties>().color = r + " " + g + " " + b + " 1";
     }
 }

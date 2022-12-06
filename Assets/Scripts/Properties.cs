@@ -5,4 +5,5 @@ using UnityEngine;
 public class Properties : MonoBehaviour
 {
     public string name;
+    public string color;
 }
