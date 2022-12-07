@@ -66,8 +66,8 @@ public class UI_Script : MonoBehaviour
         this.selected = null;
     }
 
+    /// <summary>method <c>onCubeButtonPressed</c> adds a cube to the scene.</summary>
     private void onCubeButtonPressed(){
-        Debug.Log("Cube Button Pressed");
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit)){
@@ -78,6 +78,7 @@ public class UI_Script : MonoBehaviour
         }
     }
 
+    /// <summary>method <c>onSphereButtonPressed</c> adds a sphere to the scene.</summary>
     private void onSphereButtonPressed(){
         Debug.Log("Sphere Button Pressed");
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
@@ -90,6 +91,7 @@ public class UI_Script : MonoBehaviour
         }
     }
 
+    /// <summary>method <c>onPlaneButtonPressed</c> adds a plane to the scene.</summary>
     private void onPlaneButtonPressed(){
         Debug.Log("Plane Button Pressed");
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
@@ -102,6 +104,7 @@ public class UI_Script : MonoBehaviour
         }
     }
 
+    /// <summary>method <c>onExportButtonPressed</c> exports scene to MuJoCo File.</summary>
     private void onExportButtonPressed(){
         Debug.Log("Export Button Pressed");
         GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube");
@@ -116,12 +119,16 @@ public class UI_Script : MonoBehaviour
         TextWriter writer = new StreamWriter("Model.xml");
         mujoco model = new mujoco();
         model.worldbody = new worldbody();
+
+        //TODO: Take lights from the editor
         light light = new light();
         light.diffuse = ".5 .5 .5";
         light.pos = "0 0 3";
         light.dir = "0 0 -1";
         model.worldbody.light = new light[1];
         model.worldbody.light[0] = light;
+
+        //TODO: Combine planes, cubes, spheres and all objects into one array
         model.worldbody.geom = new geom[planes.Length];
         model.worldbody.body = new body[cubes.Length + spheres.Length];
 
@@ -179,8 +186,10 @@ public class UI_Script : MonoBehaviour
         this.OnBackspace();
     }
 
+    /// <summary>method <c>OnLeftClick</c> handles left clicks inside the scene, but not the menu.</summary>
     private void OnLeftClick()
     {
+        // If the left mouse button is clicked once and released, the first object hit by the reay is selected
         if (Input.GetMouseButtonUp(0) && this.lastPosition == Vector3.zero){
             if (Input.mousePosition.y / Screen.height > 0.2f){
                 Debug.Log("Lul");
@@ -189,6 +198,7 @@ public class UI_Script : MonoBehaviour
                 int layerMask = LayerMask.GetMask("Object");
                 if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask)){
                     string tag = hit.collider.gameObject.transform.parent.transform.tag;
+                    // The object informations are loaded into the UI
                     if(tag == "Cube" || tag == "Plane" || tag == "Sphere"){
                         this.selected = hit.collider.gameObject;
                         this.yInput.value = this.selected.transform.localScale.y.ToString();
@@ -206,6 +216,8 @@ public class UI_Script : MonoBehaviour
                     Vector3 extents = this.selected.GetComponent<Renderer>().bounds.extents;
                     Vector3 center = this.selected.transform.position;
 
+                    // The arrows to move the object are created
+                    //TO-DO: Move that into one seperate function
                     Vector3 bluePos = new Vector3(center.x + extents.x + 1.5f, center.y, center.z);
                     this.zArrow = (GameObject) Instantiate(Resources.Load("Arrow"), bluePos, Quaternion.identity);
                     this.zArrow.transform.tag = "BlueArrow";
@@ -237,6 +249,7 @@ public class UI_Script : MonoBehaviour
                     if(hit.transform.parent.gameObject == this.selectedArrow){
                         string tag = hit.collider.gameObject.transform.parent.transform.tag;
                         Transform obj = this.selected.transform.parent;
+                        //TO-DO: Move all that uglyness into one seperate function
                         if(tag=="BlueArrow"){
                             Vector3 change = lastPosition - hit.point;
                             change.y = 0;
