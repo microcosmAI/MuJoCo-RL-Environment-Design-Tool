@@ -9,6 +9,7 @@ public class body
     public string pos;
     [XmlAttribute]
     public string name;
+    public Body body;
     public joint joint;
     public geom geom;
 }

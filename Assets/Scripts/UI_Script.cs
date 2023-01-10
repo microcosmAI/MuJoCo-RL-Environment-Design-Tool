@@ -37,6 +37,7 @@ public class UI_Script : MonoBehaviour
         var sphereButton = rootElement.Q<Button>("NewSphereButton");
         var planeButton = rootElement.Q<Button>("NewPlaneButton");
         var exportButton = rootElement.Q<Button>("ExportButton");
+        var importButton = rootElement.Q<Button>("ImportButton");
         var scaleButton = rootElement.Q<Button>("ScaleButton");
 
         this.yInput = rootElement.Q<TextField>("YInput");
@@ -62,6 +63,7 @@ public class UI_Script : MonoBehaviour
         scaleButton.clickable.clicked += onApplyScalePressed;
         nameButton.clickable.clicked += OnApplyNamePressed;
         colorButton.clickable.clicked += OnApplyColorPressed;
+        importButton.clickable.clicked += OnImportButtonPressed;
 
         this.selected = null;
     }
@@ -176,6 +178,10 @@ public class UI_Script : MonoBehaviour
             newText[i-1] = arrLine[i];
         }
         File.WriteAllLines("Model.xml", newText);
+    }
+
+    private void onImportButtonPressed(){
+        // Import a model from a xml file
     }
 
     // Update is called once per frame
